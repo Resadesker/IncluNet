@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useContext } from 'react';
+import { UserContext } from '../UserContext';
 import {
   FlatList,
   View,
@@ -7,6 +9,7 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -14,12 +17,20 @@ const { height, width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
   const [posts, setPosts] = useState([]);
+  const [chats, setChats] = useState([]);
 
   useEffect(() => {
+    // Fetch posts
     fetch('http://192.168.178.23:5000/api/posts')
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error('Error fetching posts:', error));
+
+    // Fetch user's chats
+    fetch('http://192.168.178.23:5000/api/chats')
+      .then((response) => response.json())
+      .then((data) => setChats(data))
+      .catch((error) => console.error('Error fetching chats:', error));
   }, []);
 
   const pickImage = async () => {
@@ -44,27 +55,56 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  const { user } = useContext(UserContext); // Access the logged-in user's data
+
   const uploadImage = async (base64Image) => {
     try {
+      const fk_user_id = user?.id; // Ensure user ID is available
+      if (!fk_user_id) {
+        Alert.alert('Error', 'You must be logged in to upload an image.');
+        return;
+      }
+  
       const response = await fetch('http://192.168.178.23:5000/api/upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ file: base64Image }),
+        body: JSON.stringify({ image: base64Image, fk_user_id }), // Ensure 'image' key is used
       });
-
+  
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to upload image');
+        throw new Error(error.error || 'Image upload failed. Please try again.');
       }
-
+  
       const data = await response.json();
-      setPosts((prevPosts) => [data, ...prevPosts]);
+      setPosts((prevPosts) => [data, ...prevPosts]); // Add new post to the state
+      Alert.alert('Success', 'Image uploaded successfully!');
     } catch (error) {
       console.error('Failed to upload image:', error.message);
+      Alert.alert('Upload Failed', error.message || 'Something went wrong.');
     }
+  };
+  
+
+
+  const startChat = (userId) => {
+    fetch(`http://192.168.178.23:5000/api/start_chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ user_2: userId }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        Alert.alert('Chat started!', `Chat ID: ${data.chat_id}`);
+        setChats((prevChats) => [data, ...prevChats]);
+      })
+      .catch((error) => console.error('Error starting chat:', error));
   };
 
   const renderItem = ({ item }) => (
@@ -74,11 +114,16 @@ export default function HomeScreen({ navigation }) {
       </View>
       <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
       <View style={styles.rightColumn}>
-        <TouchableOpacity style={styles.playButton}>
-          <Text style={styles.buttonText}>▶</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.recordButton}>
-          <Text style={styles.buttonText}>🎤</Text>
+        {item.audio && (
+          <TouchableOpacity style={styles.playButton}>
+            <Text style={styles.buttonText}>▶</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => startChat(item.user_id)}
+        >
+          <Text style={styles.buttonText}>💬</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -86,7 +131,10 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
+      <TouchableOpacity
+        style={styles.profileButton}
+        onPress={() => navigation.navigate('Profile')}
+      >
         <Image
           source={{ uri: 'http://192.168.178.23:5000/uploads/default_avatar.png' }}
           style={styles.profileIcon}
@@ -175,12 +223,12 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginBottom: 20,
   },
-  recordButton: {
+  chatButton: {
     width: 50,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FF0000',
+    backgroundColor: '#FFAA00',
     borderRadius: 25,
   },
   buttonText: {
