@@ -38,3 +38,4 @@ yarn-error.*
 social_media.db
 database.db
 uploads/
+Backend/uploads/
