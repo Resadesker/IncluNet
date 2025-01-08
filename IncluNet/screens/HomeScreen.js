@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import {  Platform } from 'react-native';
 
 const { height, width } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ export default function HomeScreen({ navigation }) {
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error('Error fetching posts:', error));
+    console.log(posts);
 
     // Fetch user's chats
     fetch('http://192.168.178.23:5000/api/chats')
@@ -144,13 +146,14 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.plusText}>+</Text>
       </TouchableOpacity>
       <FlatList
-        data={posts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        pagingEnabled
-        showsVerticalScrollIndicator={false}
-        decelerationRate="fast"
-      />
+  data={posts}
+  renderItem={renderItem}
+  keyExtractor={(item) => item.id.toString()}
+  pagingEnabled
+  showsVerticalScrollIndicator={false}
+  decelerationRate="fast"
+/>
+
     </View>
   );
 }
