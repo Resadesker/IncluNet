@@ -7,6 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import { UserProvider } from './UserContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Stack = createStackNavigator();
 
@@ -36,6 +37,7 @@ export default function App() {
               />
               <Stack.Screen name="Register" component={RegisterScreen} />
               <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="Profile" component={ProfileScreen} />
             </Stack.Navigator>
           </View>
         </NavigationContainer>

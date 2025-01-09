@@ -112,6 +112,7 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.postContainer}>
       <View style={styles.leftColumn}>
         <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.avatar} />
+        <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.posterAvatar} />
       </View>
       <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
       <View style={styles.rightColumn}>
@@ -137,7 +138,7 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('Profile')}
       >
         <Image
-          source={{ uri: 'http://192.168.178.23:5000/uploads/default_avatar.png' }}
+          source={{ uri: 'http://192.168.178.23:5000/uploads/default_avatar.jpeg' }}
           style={styles.profileIcon}
         />
       </TouchableOpacity>
@@ -169,8 +170,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   profileIcon: {
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     borderRadius: 25,
   },
   uploadButton: {
@@ -206,6 +207,13 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
   },
+  posterAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   postImage: {
     width: '60%',
     height: height,
@@ -232,6 +240,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFAA00',
     borderRadius: 25,
+    marginTop: 500,
+    bottom: 20,
   },
   buttonText: {
     fontSize: 20,
