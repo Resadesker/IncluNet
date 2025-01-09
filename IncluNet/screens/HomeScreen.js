@@ -65,7 +65,7 @@ export default function HomeScreen({ navigation }) {
         Alert.alert('Error', 'You must be logged in to upload an image.');
         return;
       }
-  
+
       const response = await fetch('http://192.168.178.23:5000/api/upload', {
         method: 'POST',
         headers: {
@@ -74,12 +74,12 @@ export default function HomeScreen({ navigation }) {
         },
         body: JSON.stringify({ image: base64Image, fk_user_id }), // Ensure 'image' key is used
       });
-  
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Image upload failed. Please try again.');
       }
-  
+
       const data = await response.json();
       setPosts((prevPosts) => [data, ...prevPosts]); // Add new post to the state
       Alert.alert('Success', 'Image uploaded successfully!');
@@ -88,7 +88,7 @@ export default function HomeScreen({ navigation }) {
       Alert.alert('Upload Failed', error.message || 'Something went wrong.');
     }
   };
-  
+
 
 
   const startChat = (userId) => {
@@ -111,8 +111,12 @@ export default function HomeScreen({ navigation }) {
   const renderItem = ({ item }) => (
     <View style={styles.postContainer}>
       <View style={styles.leftColumn}>
-        <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.avatar} />
-        <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.posterAvatar} />
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Profile')}
+        >
+          <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.avatar} />
+          <Image source={{ uri: `http://192.168.178.23:5000/uploads/default_avatar.jpeg` }} style={styles.posterAvatar} />
+        </TouchableOpacity>
       </View>
       <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
       <View style={styles.rightColumn}>
@@ -146,13 +150,13 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.plusText}>+</Text>
       </TouchableOpacity>
       <FlatList
-  data={posts}
-  renderItem={renderItem}
-  keyExtractor={(item) => item.id.toString()}
-  pagingEnabled
-  showsVerticalScrollIndicator={false}
-  decelerationRate="fast"
-/>
+        data={posts}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        pagingEnabled
+        showsVerticalScrollIndicator={false}
+        decelerationRate="fast"
+      />
 
     </View>
   );
@@ -198,29 +202,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   leftColumn: {
-    width: '20%',
+    width: '23%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  posterAvatar: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    marginTop: 20,
   },
   avatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-  },
-  posterAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    alignSelf: 'flex-start', // Ensure avatar stays at the top left
   },
   postImage: {
-    width: '60%',
+    width: '54%',
     height: height,
     resizeMode: 'cover',
   },
   rightColumn: {
-    width: '20%',
+    width: '23%',
     justifyContent: 'center',
     alignItems: 'center',
   },
