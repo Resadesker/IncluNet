@@ -16,6 +16,11 @@ export default function RegisterScreen({ navigation }) {
   const [avatar, setAvatar] = useState(null);
 
   const handleRegister = async () => {
+    if (!avatar) {
+      Alert.alert('Error', 'Please select an avatar.');
+      return;
+    }
+
     try {
       const response = await fetch('http://192.168.178.23:5000/api/register', {
         method: 'POST',
@@ -25,7 +30,7 @@ export default function RegisterScreen({ navigation }) {
         body: JSON.stringify({
           username,
           password,
-          avatar: avatar ? `data:image/jpeg;base64,${avatar}` : null,
+          avatar: `data:image/jpeg;base64,${avatar}`,
         }),
       });
 
@@ -49,7 +54,7 @@ export default function RegisterScreen({ navigation }) {
     });
 
     if (!result.canceled) {
-      setAvatar(result.base64);
+      setAvatar(result.assets[0].base64);
     }
   };
 
@@ -113,5 +118,15 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  link: {
+    color: '#007bff',
+    marginVertical: 10,
+  },
+  avatarPreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginVertical: 10,
   },
 });

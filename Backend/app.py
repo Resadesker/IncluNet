@@ -66,6 +66,7 @@ def init_db():
 # Static File Serving
 @app.route('/uploads/<path:filename>')
 def serve_uploads(filename):
+    print(filename)
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 # User Management
@@ -108,7 +109,6 @@ def get_posts():
             JOIN users ON posts.fk_user_id = users.id
         ''')
         posts = cursor.fetchall()
-
     return jsonify([
         {
             "id": post[0],
@@ -123,30 +123,38 @@ def get_posts():
 def upload_post():
     data = request.json
     fk_user_id = data['fk_user_id']
-    image = data['image']  # Base64 encoded image
-    audio = data.get('audio')  # Optional Base64 encoded audio
-
-    # Decode and save the image
+    image = data['image']
+    audio = data.get('audio')
     img_path = save_file(image, fk_user_id, 'image')
-
-    # Decode and save the audio (if provided)
     audio_path = save_file(audio, fk_user_id, 'audio') if audio else None
-
+    
     with sqlite3.connect(DATABASE) as conn:
         cursor = conn.cursor()
         cursor.execute(
             'INSERT INTO posts (fk_user_id, image, audio) VALUES (?, ?, ?)',
             (fk_user_id, img_path, audio_path)
         )
+        new_post_id = cursor.lastrowid
         conn.commit()
 
-        return jsonify({
-            "id": cursor.lastrowid,
-            "fk_user_id": fk_user_id,
-            "image": img_path,
-            "audio": audio_path
-        }), 201
+        # Fetch the joined post + user info
+        cursor.execute('''
+            SELECT posts.id, posts.image, posts.audio, users.nickname, users.avatar
+            FROM posts
+            JOIN users ON posts.fk_user_id = users.id
+            WHERE posts.id = ?
+        ''', (new_post_id,))
+        row = cursor.fetchone()
 
+    return jsonify({
+        "id": row[0],
+        "image": row[1],
+        "audio": row[2],
+        "user": {
+            "nickname": row[3],
+            "avatar": row[4]
+        }
+    }), 201
 # Chat and Messaging
 @app.route('/api/chats', methods=['POST'])
 def create_chat():
@@ -232,28 +240,29 @@ def get_messages(chat_id):
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    avatar = data.get('avatar')  # Base64-encoded avatar
+    data = request.json
+    nickname = data['username']
+    password = data['password']
+    base64_avatar = data.get('avatar')
 
-    if not username or not password:
-        return jsonify({'error': 'Username and password are required'}), 400
+    if not base64_avatar:
+        return jsonify({"error": "Avatar is required"}), 400
 
-    hashed_password = password  # Hash the password for security
-    avatar_path = save_file(avatar, username, 'avatar') if avatar else '/uploads/default_avatar.png'
+    avatar_path = save_file(base64_avatar, nickname, 'avatar')
 
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                'INSERT INTO users (nickname, password, avatar) VALUES (?, ?, ?)',
-                (username, hashed_password, avatar_path),
-            )
-            conn.commit()
-        return jsonify({'message': 'User registered successfully', 'avatar': avatar_path}), 201
-    except sqlite3.IntegrityError:
-        return jsonify({'error': 'Username already exists'}), 400
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            'INSERT INTO users (nickname, password, avatar) VALUES (?, ?, ?)',
+            (nickname, password, avatar_path)
+        )
+        conn.commit()
+
+    return jsonify({
+        "id": cursor.lastrowid,
+        "nickname": nickname,
+        "avatar": avatar_path
+    }), 201
 
 # Helper Functions
 def save_file(base64_data, user_id, file_type):

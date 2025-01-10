@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useContext } from 'react';
-import { UserContext } from '../UserContext';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   FlatList,
   View,
@@ -12,12 +10,14 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { UserContext } from '../UserContext';
 
 const { height, width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
   const [posts, setPosts] = useState([]);
   const [chats, setChats] = useState([]);
+  const { user } = useContext(UserContext); // Access the logged-in user's data
 
   useEffect(() => {
     // Fetch posts
@@ -25,7 +25,6 @@ export default function HomeScreen({ navigation }) {
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error('Error fetching posts:', error));
-    console.log(posts);
 
     // Fetch user's chats
     fetch('http://192.168.178.23:5000/api/chats')
@@ -55,8 +54,6 @@ export default function HomeScreen({ navigation }) {
       await uploadImage(base64Image);
     }
   };
-
-  const { user } = useContext(UserContext); // Access the logged-in user's data
 
   const uploadImage = async (base64Image) => {
     try {
@@ -89,8 +86,6 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-
-
   const startChat = (userId) => {
     fetch(`http://192.168.178.23:5000/api/start_chat`, {
       method: 'POST',
@@ -114,8 +109,7 @@ export default function HomeScreen({ navigation }) {
         <TouchableOpacity
           onPress={() => navigation.navigate('Profile')}
         >
-          <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.avatar} />
-          <Image source={{ uri: `http://192.168.178.23:5000/uploads/default_avatar.jpeg` }} style={styles.posterAvatar} />
+          <Image source={{ uri: `http://192.168.178.23:5000${item.user.avatar}` }} style={styles.avatar} />
         </TouchableOpacity>
       </View>
       <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
@@ -127,7 +121,7 @@ export default function HomeScreen({ navigation }) {
         )}
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => startChat(item.user_id)}
+          onPress={() => startChat(item.user.id)}
         >
           <Text style={styles.buttonText}>💬</Text>
         </TouchableOpacity>
@@ -142,7 +136,11 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('Profile')}
       >
         <Image
-          source={{ uri: 'http://192.168.178.23:5000/uploads/default_avatar.jpeg' }}
+          source={{
+            uri: user?.avatar
+              ? `http://192.168.178.23:5000${user.avatar}`
+              : 'http://192.168.178.23:5000/uploads/default_avatar.png',
+          }}
           style={styles.profileIcon}
         />
       </TouchableOpacity>
@@ -157,7 +155,6 @@ export default function HomeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         decelerationRate="fast"
       />
-
     </View>
   );
 }
@@ -206,17 +203,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  posterAvatar: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    marginTop: 20,
-  },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignSelf: 'flex-start', // Ensure avatar stays at the top left
+    width: 180,
+    height: 180,
+    borderRadius: 100,
+    alignSelf: 'flex-start',
   },
   postImage: {
     width: '54%',
