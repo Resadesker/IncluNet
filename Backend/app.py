@@ -155,6 +155,48 @@ def upload_post():
             "avatar": row[4]
         }
     }), 201
+
+@app.route('/api/profile/<username>', methods=['GET'])
+def get_profile(username):
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, nickname, avatar FROM users WHERE nickname = ?', (username,))
+        user = cursor.fetchone()
+        if user:
+            cursor.execute('SELECT id, image FROM posts WHERE fk_user_id = ?', (user[0],))
+            posts = cursor.fetchall()
+            posts_data = [{"id": post[0], "image": post[1]} for post in posts]
+            return jsonify({
+                "id": user[0],
+                "username": user[1],
+                "avatar": user[2],
+                "posts": posts_data
+            })
+        return jsonify({"error": "User not found"}), 404
+
+@app.route('/api/profile/<username>/avatar', methods=['POST'])
+def update_avatar(username):
+    data = request.files['file']
+    if not data:
+        return jsonify({"error": "No file provided"}), 400
+
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM users WHERE nickname = ?', (username,))
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user_id = user[0]
+        avatar_path = save_file(data.read(), user_id, 'avatar')
+        if not avatar_path:
+            return jsonify({"error": "Failed to save avatar"}), 500
+
+        cursor.execute('UPDATE users SET avatar = ? WHERE id = ?', (avatar_path, user_id))
+        conn.commit()
+
+    return jsonify({"avatar": avatar_path}), 200
+
 # Chat and Messaging
 @app.route('/api/chats', methods=['POST'])
 def create_chat():

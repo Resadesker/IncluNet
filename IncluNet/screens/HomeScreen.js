@@ -107,14 +107,14 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.postContainer}>
       <View style={styles.leftColumn}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Profile')}
+          onPress={() => navigation.navigate('Profile', {username: item.user?.nickname})}
         >
           <Image source={{ uri: `http://192.168.178.23:5000${item.user.avatar}` }} style={styles.avatar} />
         </TouchableOpacity>
       </View>
       <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
       <View style={styles.rightColumn}>
-        {item.audio && (
+        {!item.audio && (
           <TouchableOpacity style={styles.playButton}>
             <Text style={styles.buttonText}>▶</Text>
           </TouchableOpacity>
@@ -133,13 +133,15 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.profileButton}
-        onPress={() => navigation.navigate('Profile')}
+        onPress={() => navigation.navigate('Profile', 
+          { username: user?.username }
+        )}
       >
         <Image
           source={{
             uri: user?.avatar
               ? `http://192.168.178.23:5000${user.avatar}`
-              : 'http://192.168.178.23:5000/uploads/default_avatar.png',
+              : 'http://192.168.178.23:5000/uploads/default_avatar.jpeg',
           }}
           style={styles.profileIcon}
         />
@@ -216,30 +218,32 @@ const styles = StyleSheet.create({
   },
   rightColumn: {
     width: '23%',
+    top: 200,
+    height: '54%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   playButton: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#00FF00',
-    borderRadius: 25,
-    marginBottom: 20,
-  },
-  chatButton: {
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFAA00',
-    borderRadius: 25,
-    marginTop: 500,
+    borderRadius: 55,
+    marginBottom: 20,
+  },
+  chatButton: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFAA00',
+    borderRadius: 55,
+    marginTop: 200,
     bottom: 20,
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 50,
     color: '#fff',
   },
 });
