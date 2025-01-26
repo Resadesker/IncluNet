@@ -123,7 +123,7 @@ export default function HomeScreen({ navigation }) {
           style={styles.chatButton}
           onPress={() => startChat(item.user.id)}
         >
-          <Text style={styles.buttonText}>💬</Text>
+          <Text style={styles.buttonText}>🗣️</Text>
         </TouchableOpacity>
       </View>
     </View>

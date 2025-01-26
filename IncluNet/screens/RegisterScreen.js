@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   Image,
+  ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -14,10 +15,50 @@ export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [selectedDisabilities, setSelectedDisabilities] = useState([]);
+
+  const disabilityOptions = [
+    {
+      id: 'epilepsy',
+      label: 'Epilepsie',
+      description:
+        'Die App kann auf Schwarz-Weiß umgestellt werden oder das Scrollen wird verzögert, um die Sichtbarkeit bunter Bilder zu reduzieren.',
+    },
+    {
+      id: 'eye_control',
+      label: 'Augensteuerung',
+      description:
+        'Tasten werden größer dargestellt, und spezielle Pfeile für das Scrollen stehen zur Verfügung.',
+    },
+    {
+      id: 'cognitive',
+      label: 'Kognitive Einschränkungen',
+      description:
+        'Die App verwendet einfache Bilder und Audios, um die Kommunikation zu erleichtern.',
+    },
+    {
+      id: 'hearing',
+      label: 'Hörprobleme',
+      description:
+        'Audioinhalte können mit Untertiteln angezeigt werden (sofern die Person lesen kann).',
+    },
+    {
+      id: 'visual_impairment',
+      label: 'Sehschwäche',
+      description:
+        'Posts können von einer KI beschrieben und die Inhalte vorgelesen werden.',
+    },
+  ];
+
+  const toggleDisability = (id) => {
+    setSelectedDisabilities((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   const handleRegister = async () => {
     if (!avatar) {
-      Alert.alert('Error', 'Please select an avatar.');
+      Alert.alert('Fehler', 'Bitte wählen Sie ein Avatar.');
       return;
     }
 
@@ -36,14 +77,14 @@ export default function RegisterScreen({ navigation }) {
 
       const data = await response.json();
       if (response.ok) {
-        Alert.alert('Registration Successful', 'You can now log in.');
+        Alert.alert('Registrierung Erfolgreich', 'Sie können sich jetzt anmelden.');
         navigation.replace('Login');
       } else {
-        Alert.alert('Registration Failed', data.error);
+        Alert.alert('Registrierung Fehlgeschlagen', data.error);
       }
     } catch (error) {
-      console.error('Registration error:', error.message);
-      Alert.alert('Error', 'Something went wrong');
+      console.error('Registrierungsfehler:', error.message);
+      Alert.alert('Fehler', 'Etwas ist schiefgelaufen');
     }
   };
 
@@ -59,23 +100,31 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Back Button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.backButtonText}>Zurück</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Registrieren</Text>
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Benutzername"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Passwort"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TouchableOpacity onPress={pickAvatar}>
-        <Text style={styles.link}>Pick Avatar</Text>
+        <Text style={styles.link}>Avatar auswählen</Text>
       </TouchableOpacity>
       {avatar && (
         <Image
@@ -83,50 +132,113 @@ export default function RegisterScreen({ navigation }) {
           style={styles.avatarPreview}
         />
       )}
+      <Text style={styles.subtitle}>Wählen Sie Einschränkungen:</Text>
+      {disabilityOptions.map((option) => (
+        <TouchableOpacity
+          key={option.id}
+          style={[
+            styles.optionContainer,
+            selectedDisabilities.includes(option.id) && styles.selectedOption,
+          ]}
+          onPress={() => toggleDisability(option.id)}
+        >
+          <Text style={styles.optionLabel}>{option.label}</Text>
+          <Text style={styles.optionDescription}>{option.description}</Text>
+        </TouchableOpacity>
+      ))}
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+        <Text style={styles.buttonText}>Registrieren</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#f0f4f7',
+    padding: 20,
   },
-  title: {
-    fontSize: 24,
+  backButton: {
+    alignSelf: 'flex-start',
     marginBottom: 20,
   },
+  backButtonText: {
+    color: '#007bff',
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginVertical: 15,
+    color: '#555',
+    textAlign: 'center',
+  },
   input: {
-    width: '80%',
-    padding: 10,
+    width: '85%',
+    padding: 12,
     marginVertical: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#ddd',
+    borderRadius: 8,
     backgroundColor: '#fff',
+    fontSize: 16,
   },
   button: {
     backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 5,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+    marginTop: 20,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '600',
   },
   link: {
     color: '#007bff',
+    fontSize: 16,
     marginVertical: 10,
+    textDecorationLine: 'underline',
   },
   avatarPreview: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginVertical: 10,
+    marginVertical: 15,
+    borderWidth: 2,
+    borderColor: '#007bff',
+  },
+  optionContainer: {
+    width: '85%',
+    padding: 15,
+    marginVertical: 8,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+  },
+  selectedOption: {
+    borderColor: '#007bff',
+  },
+  optionLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  optionDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
   },
 });
