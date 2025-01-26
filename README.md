@@ -1,6 +1,6 @@
 # IncluNet: an inclusive social network for illiterate and disabled people.
 
-![[Logo.png]]
+![](Logo.png)
 Disclaimer: This is currently a technical concept, not a fully running social network.
 
 This app uses **no text** with communication solely via audio and images. Controls are as simple as possible.
@@ -15,13 +15,13 @@ This app uses **no text** with communication solely via audio and images. Contro
 The registration page is currently in German. All other pages are languageless.
 ### Assistance in Setting Up
 As illiterate individuals cannot enter their own account information and passwords, they need an external person (for example, a supervisor at the Caritas workshops) to create an account for the user and select their disabilities during registration.
-![[Registration_demo.png]]
+![](Registration_demo.png)
 ## Technical Structure
 
 This project consists of **Frontend** (*IncluNet/*) and **Backend** (*Backend/*).
 
 **Frontend** (the app or website) runs on React Native, which allows us to operate the app on various platforms like Web, Android, and iOS. I currently use a 10.9'' 10th generation iPad (connected with Expo) to test the project. Audios and images are recorded or uploaded at this level and sent to the server. 
-![[Diagram.png]]
+![](Diagram.png)
 
 Project structure diagram, in German.
 
