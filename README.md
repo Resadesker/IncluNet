@@ -16,6 +16,11 @@ The registration page is currently in German. All other pages are languageless.
 ### Assistance in Setting Up
 As illiterate individuals cannot enter their own account information and passwords, they need an external person (for example, a supervisor at the Caritas workshops) to create an account for the user and select their disabilities during registration.
 ![](Registration_demo.png)
+
+### Concept
+The app is based on simplicity. Here is a peak at our UX-Design.
+![](Concept.png)
+
 ## Technical Structure
 
 This project consists of **Frontend** (*IncluNet/*) and **Backend** (*Backend/*).
