@@ -60,4 +60,4 @@ npm start
 ```
 Use Expo on your mobile device (tablet) to open the app.
 ## Our partners
-Thanks to our partners which helped us collect information: **Lebenshilfe Vorarlberg** and **Caritas Werkstätten** (Caritas Workshops). This organizations, which are based in Austria, offer support to people with disabilities through protected jobs, qualification measures, and individual promotion. They enable participation in working life, promote social integration, and strengthen personal development.
+Thanks to our partners which helped us to collect information: **Lebenshilfe Vorarlberg** and **Caritas Werkstätten** (Caritas Workshops). These organizations, which are based in Austria, offer support to people with disabilities through protected jobs, qualification measures, and individual promotion. They enable participation in working life, promote social integration, and strengthen personal development.
