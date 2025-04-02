@@ -63,6 +63,11 @@ export default function ProfileScreen({ route, navigation }) {
             />
           </TouchableOpacity>
         )}
+        
+        <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('Chat', { chatId: openProfile, userId: user.username })}>
+          <Text style={styles.buttonText}>💬</Text>
+        </TouchableOpacity>
+
         <View style={styles.avatarContainer}>
           <Image source={{ uri: `http://192.168.178.23:5000${avatar}` }} style={styles.avatar} />
         </View>
@@ -125,6 +130,18 @@ const styles = StyleSheet.create({
     marginTop: -40,
     marginRight: 20,
     bottom: 20,
+  },
+  chatButton: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFAA00',
+    borderRadius: 55,
+    marginTop: -20,
+    marginLeft: 280,
+    bottom: 80,
   },
   buttonText: {
     color: '#007bff',
