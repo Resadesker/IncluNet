@@ -242,6 +242,7 @@ def handle_join(data):
 @socketio.on("send_message")
 def handle_send_message(data):
     print(f"Received message data... ", data.get("image"))
+    print(data)
     fk_chat = data["fk_chat"]
     fk_author = data["fk_author"]
     from datetime import datetime, timezone

@@ -31,6 +31,7 @@ export default function ChatScreen({ route, navigation }) {
 
   // Connect to WebSocket and fetch messages
   useEffect(() => {
+    console.log("Chat ID: " + chatId);
     socket.current = io(API_BASE);
     socket.current.emit("join", { chat_id: chatId });
     socket.current.on("new_message", (msg) => {
@@ -127,6 +128,7 @@ export default function ChatScreen({ route, navigation }) {
 
   // Send a message via WebSocket
   const sendMessage = (data) => {
+    console.log("Sending message in chat ", chatId);
     const msg = { fk_chat: chatId, fk_author: userId, ...data };
     console.log("Sending message:...");
     socket.current.emit("send_message", msg);
@@ -135,7 +137,8 @@ export default function ChatScreen({ route, navigation }) {
 
   // Render each message (image or audio)
   const renderItem = ({ item }) => {
-    const isOwnMessage = item.fk_author === userId;
+    console.log("Rendering message:", item.fk_author, userId);
+    const isOwnMessage = item.fk_author == userId;
     return (
       <View
         style={[
@@ -170,8 +173,8 @@ export default function ChatScreen({ route, navigation }) {
     <View style={styles.container}>
       {/* Header with Back Button and Other User Info */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>Home</Text>
+        <TouchableOpacity style={styles.homeButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.buttonText}>🏠</Text>
         </TouchableOpacity>
         {otherUser && (
           <View style={styles.userInfo}>
@@ -212,8 +215,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#ccc",
   },
-  backButton: { marginRight: 10 },
-  backButtonText: { color: "#007AFF", fontSize: 16 },
+  homeButton: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFAA00',
+    borderRadius: 55,
+    marginTop: 120,
+    zIndex: 1,
+    marginRight: 20,
+    bottom: 20,
+  },
+  buttonText: {
+    color: '#007bff',
+    fontSize: 50,
+  },
   userInfo: { flexDirection: "row", alignItems: "center" },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   username: { fontSize: 18, fontWeight: "bold" },

@@ -23,23 +23,22 @@ export default function ProfileScreen({ route, navigation }) {
     }
   }, [openProfile]);
   useEffect(() => {
-    console.log('Route params:', route?.params);
-    console.log('Open user:', openProfile);
-    console.log('User:', user?.username);
-    console.log('User:', user?.username != openProfile);
+    if (!openProfile) return;
 
-    console.log('Avatar URI:', `http://192.168.178.23:5000${avatar}`);
-    if (openProfile) {
-      fetch(`http://192.168.178.23:5000/api/profile/${openProfile}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Fetched posts:', data.posts);
-          setAvatar(data.avatar);
-          setPosts(data.posts);
-        })
-        .catch((error) => console.error('Error fetching profile:', error));
-    }
-  }, [route.params, openProfile, user, avatar]);
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`http://192.168.178.23:5000/api/profile/${openProfile}`);
+        const data = await res.json();
+        setAvatar(data.avatar);
+        setPosts(data.posts);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, [openProfile]);
+
 
   const renderPost = ({ item }) => (
     <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
@@ -63,14 +62,22 @@ export default function ProfileScreen({ route, navigation }) {
             />
           </TouchableOpacity>
         )}
-        
-        <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('Chat', { chatId: openProfile, userId: user.username })}>
+
+        <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('Chat', {
+          chatId: [openProfile, user?.username].sort().join('_'), userId: user?.username
+        })}>
           <Text style={styles.buttonText}>💬</Text>
         </TouchableOpacity>
 
         <View style={styles.avatarContainer}>
-          <Image source={{ uri: `http://192.168.178.23:5000${avatar}` }} style={styles.avatar} />
+          {avatar && (
+            <Image
+              source={{ uri: `http://192.168.178.23:5000${avatar}` }}
+              style={styles.avatar}
+            />
+          )}
         </View>
+
         <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('Home')}>
           <Text style={styles.buttonText}>🏠</Text>
         </TouchableOpacity>

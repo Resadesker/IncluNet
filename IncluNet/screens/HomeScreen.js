@@ -86,28 +86,11 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const startChat = (userId) => {
-    fetch(`http://192.168.178.23:5000/api/start_chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ user_2: userId }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        Alert.alert('Chat started!', `Chat ID: ${data.chat_id}`);
-        setChats((prevChats) => [data, ...prevChats]);
-      })
-      .catch((error) => console.error('Error starting chat:', error));
-  };
-
   const renderItem = ({ item }) => (
     <View style={styles.postContainer}>
       <View style={styles.leftColumn}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Profile', {username: item.user?.nickname})}
+          onPress={() => navigation.navigate('Profile', { username: item.user?.nickname })}
         >
           <Image source={{ uri: `http://192.168.178.23:5000${item.user.avatar}` }} style={styles.avatar} />
         </TouchableOpacity>
@@ -121,7 +104,9 @@ export default function HomeScreen({ navigation }) {
         )}
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => startChat(item.user.id)}
+          onPress={() => navigation.navigate('Chat', {
+            chatId: [item.user?.nickname, user?.username].sort().join('_'), userId: user?.username
+          })}
         >
           <Text style={styles.buttonText}>🗣️</Text>
         </TouchableOpacity>
@@ -133,7 +118,7 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.profileButton}
-        onPress={() => navigation.navigate('Profile', 
+        onPress={() => navigation.navigate('Profile',
           { username: user?.username }
         )}
       >
