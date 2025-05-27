@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useContext } from 'react';
-import { UserContext } from '../UserContext';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   FlatList,
   View,
@@ -9,38 +7,30 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  SafeAreaView,
   Alert,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { UserContext } from '../UserContext';
+import Constants from 'expo-constants';
 
 const { height, width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
   const [posts, setPosts] = useState([]);
-  const [chats, setChats] = useState([]);
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
-    // Fetch posts
-    fetch('http://192.168.178.23:5000/api/posts')
-      .then((response) => response.json())
-      .then((data) => setPosts(data))
-      .catch((error) => console.error('Error fetching posts:', error));
-    console.log(posts);
-
-    // Fetch user's chats
-    fetch('http://192.168.178.23:5000/api/chats')
-      .then((response) => response.json())
-      .then((data) => setChats(data))
-      .catch((error) => console.error('Error fetching chats:', error));
+    fetch(`http://${Constants.expoConfig.extra.API_URL}/api/posts`)
+      .then((r) => r.json())
+      .then(setPosts)
+      .catch(console.error);
   }, []);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permissionResult.granted) {
-      alert('Permission to access camera roll is required!');
-      return;
-    }
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) return Alert.alert('Permission to access camera roll is required!');
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -52,130 +42,108 @@ export default function HomeScreen({ navigation }) {
 
     if (!result.canceled && result.assets[0]) {
       const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      await uploadImage(base64Image);
+      uploadImage(base64Image);
     }
   };
-
-  const { user } = useContext(UserContext); // Access the logged-in user's data
 
   const uploadImage = async (base64Image) => {
+    if (!user?.id) return Alert.alert('Error', 'You must be logged in to upload an image.');
     try {
-      const fk_user_id = user?.id; // Ensure user ID is available
-      if (!fk_user_id) {
-        Alert.alert('Error', 'You must be logged in to upload an image.');
-        return;
-      }
-  
-      const response = await fetch('http://192.168.178.23:5000/api/upload', {
+      const res = await fetch(`http://${Constants.expoConfig.extra.API_URL}/api/upload`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({ image: base64Image, fk_user_id }), // Ensure 'image' key is used
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64Image, fk_user_id: user.id }),
       });
-  
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Image upload failed. Please try again.');
-      }
-  
-      const data = await response.json();
-      setPosts((prevPosts) => [data, ...prevPosts]); // Add new post to the state
+      if (!res.ok) throw await res.json();
+      const newPost = await res.json();
+      setPosts((prev) => [newPost, ...prev]);
       Alert.alert('Success', 'Image uploaded successfully!');
     } catch (error) {
-      console.error('Failed to upload image:', error.message);
-      Alert.alert('Upload Failed', error.message || 'Something went wrong.');
+      console.error(error);
+      Alert.alert('Upload Failed', error.error || 'Something went wrong.');
     }
-  };
-  
-
-
-  const startChat = (userId) => {
-    fetch(`http://192.168.178.23:5000/api/start_chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ user_2: userId }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        Alert.alert('Chat started!', `Chat ID: ${data.chat_id}`);
-        setChats((prevChats) => [data, ...prevChats]);
-      })
-      .catch((error) => console.error('Error starting chat:', error));
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.postContainer}>
       <View style={styles.leftColumn}>
-        <Image source={{ uri: `http://192.168.178.23:5000${item.avatar}` }} style={styles.avatar} />
+        <TouchableOpacity onPress={() => navigation.navigate('Profile', { username: item.user.nickname })}>
+          <Image source={{ uri: `http://${Constants.expoConfig.extra.API_URL}${item.user.avatar}` }} style={styles.avatar} />
+        </TouchableOpacity>
       </View>
-      <Image source={{ uri: `http://192.168.178.23:5000${item.image}` }} style={styles.postImage} />
+
+      <View style={styles.centerColumn}>
+        <Image source={{ uri: `http://${Constants.expoConfig.extra.API_URL}${item.image}` }} style={styles.postImage} />
+      </View>
+
       <View style={styles.rightColumn}>
-        {item.audio && (
+        {!item.audio && (
           <TouchableOpacity style={styles.playButton}>
             <Text style={styles.buttonText}>▶</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => startChat(item.user_id)}
+          onPress={() => navigation.navigate('Chat', {
+            chatId: [item.user.nickname, user.username].sort().join('_'),
+            userId: user.username
+          })}
         >
-          <Text style={styles.buttonText}>💬</Text>
+          <Text style={styles.buttonText}>🗣️</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <TouchableOpacity
         style={styles.profileButton}
-        onPress={() => navigation.navigate('Profile')}
+        onPress={() => navigation.navigate('Profile', { username: user.username })}
       >
         <Image
-          source={{ uri: 'http://192.168.178.23:5000/uploads/default_avatar.png' }}
+          source={{
+            uri: user.avatar
+              ? `http://${Constants.expoConfig.extra.API_URL}${user.avatar}`
+              : `http://${Constants.expoConfig.extra.API_URL}/uploads/default_avatar.jpeg`,
+          }}
           style={styles.profileIcon}
         />
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
         <Text style={styles.plusText}>+</Text>
       </TouchableOpacity>
-      <FlatList
-  data={posts}
-  renderItem={renderItem}
-  keyExtractor={(item) => item.id.toString()}
-  pagingEnabled
-  showsVerticalScrollIndicator={false}
-  decelerationRate="fast"
-/>
 
-    </View>
+      <FlatList
+        data={posts}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        pagingEnabled
+        snapToInterval={height}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, paddingBottom: 0, marginBottom: -25, backgroundColor: '#fff' },
+
   profileButton: {
     position: 'absolute',
     top: 40,
     left: 20,
-    zIndex: 1,
+    zIndex: 10,
+    elevation: 10,
   },
-  profileIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
+  profileIcon: { width: 100, height: 100, borderRadius: 25 },
+
   uploadButton: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 60,
     alignSelf: 'center',
     width: 60,
     height: 60,
@@ -183,58 +151,38 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
+    zIndex: 10,
+    elevation: 10,
   },
-  plusText: {
-    color: '#fff',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
+  plusText: { color: '#fff', fontSize: 40, fontWeight: 'bold', bottom: 3 },
+
   postContainer: {
+    width: width,
     height: height,
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  leftColumn: { width: '24%', justifyContent: 'center', alignItems: 'center' },
+  avatar: { width: 200, height: 200, borderRadius: 560 },
+
+  centerColumn: {
+    width: '52%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  postImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+
+  rightColumn: {
+    width: '24%',
+    height: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 80,
   },
-  leftColumn: {
-    width: '20%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },
-  postImage: {
-    width: '60%',
-    height: height,
-    resizeMode: 'cover',
-  },
-  rightColumn: {
-    width: '20%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#00FF00',
-    borderRadius: 25,
-    marginBottom: 20,
-  },
-  chatButton: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFAA00',
-    borderRadius: 25,
-  },
-  buttonText: {
-    fontSize: 20,
-    color: '#fff',
-  },
+  playButton: { width: 120, height: 120, borderRadius: 80, backgroundColor: '#FFAA00', justifyContent: 'center', alignItems: 'center', marginTop: 240 },
+  chatButton: { width: 120, height: 120, borderRadius: 80, backgroundColor: '#FFAA00', justifyContent: 'center', alignItems: 'center' },
+  buttonText: { fontSize: 52, color: '#fff' },
 });

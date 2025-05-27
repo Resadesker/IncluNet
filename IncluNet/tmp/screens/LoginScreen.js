@@ -35,7 +35,7 @@ export default function LoginScreen({ navigation }) {
                 Alert.alert('Login Failed', data.error);
             }
         } catch (error) {
-            console.error('Login error:', error.message);
+            console.error('Login error:', error.message, ` for API URL: http://${Constants.expoConfig.extra.API_URL}/api/login`);
             Alert.alert('Error', 'Something went wrong');
         }
     };
