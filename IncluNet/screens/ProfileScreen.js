@@ -4,6 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { UserContext } from '../UserContext';
 import Constants from 'expo-constants';
 
+const { width: screenWidth } = Dimensions.get('window');
+
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen({ route, navigation }) {
@@ -103,12 +105,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
     padding: 10,
   },
   profileButton: {
     position: 'absolute',
     top: 40,
     left: 20,
+    // left: '50%',
+    // transform: [{ translateX: -screenWidth / 2 }],
     zIndex: 1,
   },
   profileIcon: {
@@ -120,15 +125,21 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     alignItems: 'center',
+    // backgroundColor: 'blue',
+    width: screenWidth,
+    left: '50%',
+    transform: [{ translateX: -screenWidth / 2 }],
   },
   avatar: {
-    left: 480,
+    // left: 480,
+    left: '50%',
+    transform: [{ translateX: -screenWidth / 2 }],
     width: 200,
     height: 200,
     borderRadius: 100,
   },
   homeButton: {
-    // position: 'absolute',
+    position: 'absolute',
     width: 100,
     height: 100,
     justifyContent: 'center',
@@ -137,7 +148,8 @@ const styles = StyleSheet.create({
     borderRadius: 55,
     marginTop: -40,
     marginRight: 20,
-    bottom: 20,
+    top: 80,
+    right: 20,
   },
   chatButton: {
     position: 'absolute',
@@ -150,6 +162,7 @@ const styles = StyleSheet.create({
     marginTop: -20,
     marginLeft: 280,
     bottom: 80,
+    zIndex: 5,
   },
   buttonText: {
     color: '#007bff',

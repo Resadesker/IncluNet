@@ -182,7 +182,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 80,
   },
-  playButton: { width: 120, height: 120, borderRadius: 80, backgroundColor: '#FFAA00', justifyContent: 'center', alignItems: 'center', marginTop: 240 },
-  chatButton: { width: 120, height: 120, borderRadius: 80, backgroundColor: '#FFAA00', justifyContent: 'center', alignItems: 'center' },
+  playButton: {
+    position: 'absolute',
+    top: '50%',
+    width: 120,
+    height: 120,
+    borderRadius: 80,
+    backgroundColor: '#FFAA00',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ translateY: 0 }],
+    // left or right stays as you like
+  },
+  chatButton: {
+    position: 'absolute',
+    bottom: '10%',
+    width: 120,
+    height: 120,
+    borderRadius: 80,
+    backgroundColor: '#FFAA00',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ translateY: -60 }],
+    // left or right stays as you like
+  },
   buttonText: { fontSize: 52, color: '#fff' },
 });
